@@ -1,0 +1,29 @@
+hash: 49a698f7b6ddb16d2b05d4701d198e773d83ff0a725bf04b05b435d53c6f010d
+updated: 2017-11-26T20:33:43.288424+08:00
+imports:
+- name: github.com/go-sql-driver/mysql
+  version: cd4cb909ce1a31435164be29bf3682031f61539a
+- name: github.com/jinzhu/gorm
+  version: 5174cc5c242a728b435ea2be8a2f7f998e15429b
+  subpackages:
+  - dialects/mysql
+- name: github.com/jinzhu/inflection
+  version: 1c35d901db3da928c72a72d8458480cc9ade058f
+- name: github.com/pelletier/go-toml
+  version: 16398bac157da96aa88f98a2df640c7f32af1da2
+- name: github.com/sirupsen/logrus
+  version: f006c2ac4710855cf0f916dd6b77acf6b048dc6e
+- name: golang.org/x/crypto
+  version: b080dc9a8c480b08e698fb1219160d598526310f
+  subpackages:
+  - ssh/terminal
+- name: golang.org/x/sys
+  version: 4ff8c001ce4cc464e644b922325097228fce14d8
+  subpackages:
+  - unix
+  - windows
+- name: google.golang.org/appengine
+  version: 9d8544a6b2c7df9cff240fcf92d7b2f59bc13416
+  subpackages:
+  - cloudsql
+testImports: []

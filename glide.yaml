@@ -1,2 +1,8 @@
 package: github.com/cosmtrek/officerk
-import: []
+import:
+- package: github.com/jinzhu/gorm
+  version: ^1.0.0
+- package: github.com/pelletier/go-toml
+  version: ^1.0.1
+- package: github.com/sirupsen/logrus
+  version: ^1.0.3
