@@ -5,8 +5,6 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql" // mysql driver
 )
 
-var _ xMigrate = new(JobLog)
-
 // JobStatus has four statuses following
 type JobStatus int
 
@@ -24,8 +22,4 @@ type JobLog struct {
 	JobID  int       `gorm:"not null"`
 	Status JobStatus `gorm:"not null"`
 	Retry  int
-}
-
-func (jl *JobLog) migrate(db *gorm.DB) error {
-	return nil
 }

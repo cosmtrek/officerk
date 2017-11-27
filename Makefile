@@ -32,3 +32,7 @@ build: check
 .PHONY: install
 install: check
 	go install -ldflags '$(LDFLAGS)'
+
+.PHONY: run
+run:
+	go run ./cmd/node/main.go -c ./conf/node.conf

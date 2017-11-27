@@ -5,8 +5,6 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql" // mysql driver
 )
 
-var _ xMigrate = new(TaskLog)
-
 // TaskStatus has three statuses
 type TaskStatus int
 
@@ -25,8 +23,4 @@ type TaskLog struct {
 	Name     string     `gorm:"not null"`
 	Status   TaskStatus `gorm:"not null"`
 	Retry    int
-}
-
-func (tl *TaskLog) migrate(db *gorm.DB) error {
-	return nil
 }
