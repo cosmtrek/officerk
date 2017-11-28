@@ -11,4 +11,5 @@ type Job struct {
 	Name      string `gorm:"not null"`
 	Schedule  string
 	RoutePath string
+	Tasks     []Task
 }
