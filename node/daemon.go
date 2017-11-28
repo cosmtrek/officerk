@@ -7,11 +7,14 @@ import (
 	"github.com/cosmtrek/supergo/dag"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"github.com/robfig/cron"
 	"github.com/sirupsen/logrus"
 )
 
 type daemon struct {
-	db *gorm.DB
+	db            *gorm.DB
+	cron          *cron.Cron
+	restartCronCh chan bool
 
 	sync.RWMutex
 	jobs []jobDAG
@@ -19,12 +22,31 @@ type daemon struct {
 
 func newDaemon(db *gorm.DB) (*daemon, error) {
 	return &daemon{
-		db: db,
+		db:   db,
+		cron: cron.New(),
 	}, nil
 }
 
+// TODO
 func (d *daemon) run() error {
-	return d.loadJobsFromDB()
+	return nil
+}
+
+func (d *daemon) reloadCron() error {
+	var err error
+	if err = d.loadJobsFromDB(); err != nil {
+		return err
+	}
+	d.RLock()
+	for _, job := range d.jobs {
+		logrus.Debugf("job: %s", job.job.Name)
+		err = d.cron.AddJob(job.job.Schedule, job)
+		if err != nil {
+			logrus.Errorf("failed to add job: %+v", job)
+		}
+	}
+	d.RUnlock()
+	return nil
 }
 
 func (d *daemon) loadJobsFromDB() error {
@@ -71,22 +93,23 @@ func (d *daemon) newJobDAG(j Job) (jobDAG, error) {
 	}, nil
 }
 
+// Run implements cron job interface
+func (j jobDAG) Run() {
+	for _, t := range j.topoOrder {
+		logrus.Debugf("%d: %s, command: %s", t.JobID, t.Name, t.Command)
+	}
+}
+
 func (d *daemon) runJob(id uint) error {
 	d.RLock()
 	defer d.RUnlock()
 	for _, j := range d.jobs {
 		if id == j.job.ID {
-			return j.run()
+			j.Run()
+			return nil
 		}
 	}
 	return errors.Errorf("failed to find job %s", id)
-}
-
-func (j *jobDAG) run() error {
-	for _, t := range j.topoOrder {
-		logrus.Debugf("%d: %s, command: %s", t.JobID, t.Name, t.Command)
-	}
-	return nil
 }
 
 func getTopologicalOrder(tasks []Task) ([]Task, error) {

@@ -49,10 +49,12 @@ func (r *Controller) Run() {
 	if err = r.autoMigrate(); err != nil {
 		logrus.Fatal(err)
 	}
-	logrus.Info("daemon is running...")
-	if err = r.daemon.run(); err != nil {
-		logrus.Fatal(err)
-	}
+	go func() {
+		logrus.Info("daemon is running...")
+		if err = r.daemon.run(); err != nil {
+			logrus.Fatal(err)
+		}
+	}()
 	logrus.Info("server is running, port: " + r.config.serverPort())
 	r.registerRoutes()
 	if err = r.server.Run(":" + r.config.serverPort()); err != nil {

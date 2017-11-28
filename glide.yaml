@@ -11,3 +11,5 @@ import:
 - package: github.com/cosmtrek/supergo
 - package: github.com/pkg/errors
   version: ^0.8.0
+- package: github.com/robfig/cron
+  version: ^1.0.0
