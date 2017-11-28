@@ -19,7 +19,7 @@ const (
 // JobLog traces every run of a job
 type JobLog struct {
 	gorm.Model
-	JobID  int       `gorm:"not null"`
+	JobID  uint      `gorm:"not null"`
 	Status JobStatus `gorm:"not null"`
 	Retry  int
 }

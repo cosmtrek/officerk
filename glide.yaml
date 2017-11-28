@@ -8,3 +8,6 @@ import:
   version: ^1.0.3
 - package: github.com/gin-gonic/gin
   version: ^1.2.0
+- package: github.com/cosmtrek/supergo
+- package: github.com/pkg/errors
+  version: ^0.8.0

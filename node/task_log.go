@@ -18,8 +18,8 @@ const (
 // TaskLog traces every run of a task
 type TaskLog struct {
 	gorm.Model
-	JobLogID int        `gorm:"not null"`
-	TaskID   int        `gorm:"not null"`
+	JobLogID uint       `gorm:"not null"`
+	TaskID   uint       `gorm:"not null"`
 	Name     string     `gorm:"not null"`
 	Status   TaskStatus `gorm:"not null"`
 	Retry    int

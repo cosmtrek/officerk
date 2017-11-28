@@ -8,6 +8,7 @@ import (
 // Task is the smallest unit for running scripts or commands
 type Task struct {
 	gorm.Model
+	JobID     uint   `gorm:"not null"`
 	Name      string `gorm:"not null"`
 	Command   string `gorm:"not null"`
 	NextTasks string // "task1;task2;task3"
