@@ -1,4 +1,4 @@
-# development
+# Development Notes
 
 ## Prepare MySQL database
 
@@ -8,6 +8,7 @@ mysql -uroot
 
 # create user
 CREATE USER 'officerk'@'localhost' IDENTIFIED BY 'officerkpass';
+
 # create database
 CREATE DATABASE officerk_development;
 
