@@ -12,9 +12,10 @@ import (
 )
 
 type daemon struct {
-	db            *gorm.DB
-	cron          *cron.Cron
-	restartCronCh chan bool
+	db                *gorm.DB
+	cron              *cron.Cron
+	restartCronCh     chan bool
+	restartCronDoneCh chan bool
 
 	sync.RWMutex
 	jobs []jobDAG
@@ -22,31 +23,54 @@ type daemon struct {
 
 func newDaemon(db *gorm.DB) (*daemon, error) {
 	return &daemon{
-		db:   db,
-		cron: cron.New(),
+		db:                db,
+		cron:              cron.New(),
+		restartCronCh:     make(chan bool),
+		restartCronDoneCh: make(chan bool),
 	}, nil
 }
 
-// TODO
 func (d *daemon) run() error {
+	go func() {
+		for {
+			switch {
+			case <-d.restartCronCh:
+				d.cron.Stop()
+				d.restartCronDoneCh <- true
+			}
+		}
+	}()
+	for {
+		var err error
+		if err = d.reloadCron(); err != nil {
+			logrus.Errorf("failed to restart cron, err: %s", err)
+		}
+		d.cron.Start()
+		<-d.restartCronDoneCh
+		logrus.Debug("stop running, restarting...")
+	}
 	return nil
 }
 
 func (d *daemon) reloadCron() error {
 	var err error
 	if err = d.loadJobsFromDB(); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	d.RLock()
 	for _, job := range d.jobs {
 		logrus.Debugf("job: %s", job.job.Name)
 		err = d.cron.AddJob(job.job.Schedule, job)
 		if err != nil {
-			logrus.Errorf("failed to add job: %+v", job)
+			return errors.WithStack(err)
 		}
 	}
 	d.RUnlock()
 	return nil
+}
+
+func (d *daemon) restartCron() {
+	d.restartCronCh <- true
 }
 
 func (d *daemon) loadJobsFromDB() error {

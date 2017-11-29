@@ -70,4 +70,5 @@ func (r *Controller) registerRoutes() {
 	r.server.GET("/k", h.k)
 	r.server.POST("/jobs/new", h.jobsNew)
 	r.server.GET("/jobs/:id/run", h.jobsRun)
+	r.server.GET("/admin/reload_jobs", h.jobsReload)
 }
