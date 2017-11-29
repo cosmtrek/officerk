@@ -20,7 +20,25 @@ type TaskLog struct {
 	gorm.Model
 	JobLogID uint       `gorm:"not null"`
 	TaskID   uint       `gorm:"not null"`
-	Name     string     `gorm:"not null"`
 	Status   TaskStatus `gorm:"not null"`
 	Retry    int
+}
+
+func createTaskLog(db *gorm.DB, jlID uint, tid uint) (*TaskLog, error) {
+	taskLog := &TaskLog{
+		JobLogID: jlID,
+		TaskID: tid,
+		Status: TaskRunning,
+	}
+	return taskLog, db.Create(taskLog).Error
+}
+
+func updateTaskLogStatus(db *gorm.DB, tl *TaskLog, status TaskStatus) error {
+	var err error
+	if status == TaskSucceed {
+		err = db.Model(tl).UpdateColumn("status", status).Error
+	} else if status == TaskFailed {
+		err = db.Model(tl).UpdateColumn("status", status).UpdateColumn("retry", tl.Retry+1).Error
+	}
+	return err
 }

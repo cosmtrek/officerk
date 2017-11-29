@@ -95,6 +95,7 @@ func (d *daemon) loadJobsFromDB() error {
 }
 
 type jobDAG struct {
+	db        *gorm.DB
 	job       Job
 	tasks     []Task
 	topoOrder []Task // task name as element in topological order
@@ -111,6 +112,7 @@ func (d *daemon) newJobDAG(j Job) (jobDAG, error) {
 		return jobDAG{}, err
 	}
 	return jobDAG{
+		db:        d.db,
 		job:       j,
 		tasks:     tasks,
 		topoOrder: topoOrder,
@@ -119,8 +121,35 @@ func (d *daemon) newJobDAG(j Job) (jobDAG, error) {
 
 // Run implements cron job interface
 func (j jobDAG) Run() {
+	var err error
+	// TODO: if this job is failed, then abort it until it'll be fixed?
+	logrus.Debugf("=== run job: %d - %s", j.job.ID, j.job.Name)
+	jobLog, err := createJobLog(j.db, j.job.ID)
+	if err != nil {
+		logrus.Errorf("failed to create job log, err: %s", err)
+		return
+	}
 	for _, t := range j.topoOrder {
-		logrus.Debugf("%d: %s, command: %s", t.JobID, t.Name, t.Command)
+		taskLog, err := createTaskLog(j.db, t.JobID, t.ID)
+		if err != nil {
+			logrus.Errorf("failed to create task log, err: %s", err)
+			return
+		}
+		// TODO: retry?
+		if err = runTask(j.db, t); err != nil {
+			logrus.Errorf("failed to run task %s, err: %s", t.Name, err)
+			if err = updateTaskLogStatus(j.db, taskLog, TaskFailed); err != nil {
+				logrus.Errorf("failed to update task log, err: %s", err)
+				return
+			}
+		}
+		if err = updateTaskLogStatus(j.db, taskLog, TaskSucceed); err != nil {
+			logrus.Errorf("failed to update task log, err: %s", err)
+			return
+		}
+	}
+	if err = updateJobLogStatus(j.db, jobLog, JobSucceed); err != nil {
+		logrus.Errorf("failed to update job status, err: %s", err)
 	}
 }
 
