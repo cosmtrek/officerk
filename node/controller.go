@@ -68,7 +68,21 @@ func (r *Controller) registerRoutes() {
 		daemon: r.daemon,
 	}
 	r.server.GET("/k", h.k)
-	r.server.POST("/jobs/new", h.jobsNew)
-	r.server.GET("/jobs/:id/run", h.jobsRun)
-	r.server.GET("/admin/reload_jobs", h.jobsReload)
+
+	jobs := r.server.Group("/jobs")
+	jobs.GET("/", h.jobsIndex)
+	jobs.POST("/new", h.jobsNew)
+	jobs.GET("/:id", h.jobsDetail)
+	jobs.PUT("/:id", h.jobsUpdate)
+	jobs.DELETE("/:id", h.jobsDelete)
+
+	tasks := r.server.Group("/tasks")
+	tasks.POST("/new", h.tasksNew)
+	tasks.GET("/:id", h.tasksDetail)
+	tasks.PUT("/:id", h.tasksUpdate)
+	tasks.DELETE("/:id", h.tasksDelete)
+
+	admin := r.server.Group("/admin")
+	admin.GET("/jobs/run/:id", h.jobsRun)
+	admin.GET("/jobs/reload", h.jobsReload)
 }

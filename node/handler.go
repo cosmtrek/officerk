@@ -18,6 +18,16 @@ func (h *handler) k(c *gin.Context) {
 	c.String(http.StatusOK, "Sometimes to love someone, you gotta be a stranger. -- Blade Runner 2049")
 }
 
+func (h *handler) jobsIndex(c *gin.Context) {
+	var err error
+	data, err := h.daemon.getJobs()
+	if err != nil {
+		responseBadRequest(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": data})
+}
+
 func (h *handler) jobsNew(c *gin.Context) {
 	var err error
 	var jr JobRequest
@@ -54,10 +64,76 @@ func (h *handler) jobsRun(c *gin.Context) {
 	responseOK(c)
 }
 
+func (h *handler) jobsDetail(c *gin.Context) {
+	var err error
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil || id <= 0 {
+		responseBadRequest(c, err)
+		return
+	}
+	data, err := h.daemon.getJob(uint(id))
+	if err != nil {
+		responseBadRequest(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": data})
+}
+
+func (h *handler) jobsUpdate(c *gin.Context) {
+	var err error
+	var jr JobRequest
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil || id <= 0 {
+		responseBadRequest(c, err)
+		return
+	}
+	if err = c.BindJSON(&jr); err != nil {
+		responseBadRequest(c, err)
+		return
+	}
+	job := Job{
+		Name:      jr.Name,
+		Schedule:  jr.Schedule,
+		RoutePath: jr.RoutePath,
+	}
+	if err = h.daemon.updateJob(uint(id), job); err != nil {
+		responseBadRequest(c, err)
+		return
+	}
+	responseOK(c)
+}
+
+func (h *handler) jobsDelete(c *gin.Context) {
+	var err error
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil || id <= 0 {
+		responseBadRequest(c, err)
+		return
+	}
+	err = h.daemon.deleteJob(uint(id))
+	if err != nil {
+		responseBadRequest(c, err)
+		return
+	}
+	responseOK(c)
+}
+
 func (h *handler) jobsReload(c *gin.Context) {
 	h.daemon.restartCron()
 	responseOK(c)
 }
+
+// TODO
+func (h *handler) tasksNew(c *gin.Context) {}
+
+// TODO
+func (h *handler) tasksDetail(c *gin.Context) {}
+
+// TODO
+func (h *handler) tasksUpdate(c *gin.Context) {}
+
+// TODO
+func (h *handler) tasksDelete(c *gin.Context) {}
 
 func responseOK(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "ok"})

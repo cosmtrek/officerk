@@ -94,6 +94,84 @@ func (d *daemon) loadJobsFromDB() error {
 	return nil
 }
 
+func (d *daemon) getJobs() ([]JobRequest, error) {
+	var err error
+	var jobs []Job
+	var tasks []Task
+	var data []JobRequest
+	err = d.db.Where("deleted_at IS NULL").Order("created_at DESC").Find(&jobs).Error
+	if err != nil {
+		return data, err
+	}
+	var taskIDs []uint
+	for _, job := range jobs {
+		taskIDs = append(taskIDs, job.ID)
+	}
+	err = d.db.Where("deleted_at IS NULL and id in (?)", taskIDs).Order("created_at DESC").Find(&tasks).Error
+	if err != nil {
+		return data, err
+	}
+	for _, job := range jobs {
+		jr := JobRequest{
+			Name:      job.Name,
+			Schedule:  job.Schedule,
+			RoutePath: job.RoutePath,
+			Tasks:     make([]TaskRequest, 0),
+		}
+		for _, task := range tasks {
+			if task.JobID == job.ID {
+				jr.Tasks = append(jr.Tasks, TaskRequest{
+					Name:      task.Name,
+					Command:   task.Command,
+					NextTasks: task.NextTasks,
+				})
+			}
+		}
+		data = append(data, jr)
+	}
+	return data, nil
+}
+
+func (d *daemon) getJob(id uint) (JobRequest, error) {
+	var err error
+	var job Job
+	var tasks []Task
+	var data JobRequest
+	err = d.db.Where("deleted_at IS NULL").Order("created_at DESC").Find(&job).Related(&tasks).Error
+	if err != nil {
+		return data, err
+	}
+	data.Name = job.Name
+	data.Schedule = job.Schedule
+	data.RoutePath = job.RoutePath
+	for _, task := range tasks {
+		data.Tasks = append(data.Tasks, TaskRequest{
+			Name:      task.Name,
+			Command:   task.Command,
+			NextTasks: task.NextTasks,
+		})
+	}
+	return data, nil
+}
+
+func (d *daemon) updateJob(id uint, data Job) error {
+	var job Job
+	var err error
+	if err = d.db.Where("deleted_at IS NULL").Where("id = ?", id).Find(&job).Error; err != nil {
+		return err
+	}
+	return d.db.Model(&job).Updates(data).Error
+}
+
+func (d *daemon) deleteJob(id uint) error {
+	var job Job
+	var err error
+	if err = d.db.Where("deleted_at IS NULL").Where("id = ?", id).Find(&job).Error; err != nil {
+		return err
+	}
+	return d.db.Delete(&job).Error
+}
+
 type jobDAG struct {
 	db        *gorm.DB
 	job       Job
