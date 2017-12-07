@@ -96,6 +96,7 @@ func (h *handler) jobsUpdate(c *gin.Context) {
 		Schedule:  jr.Schedule,
 		RoutePath: jr.RoutePath,
 	}
+	// TODO: update tasks
 	if err = h.daemon.updateJob(uint(id), job); err != nil {
 		responseBadRequest(c, err)
 		return
@@ -122,18 +123,6 @@ func (h *handler) jobsReload(c *gin.Context) {
 	h.daemon.restartCron()
 	responseOK(c)
 }
-
-// TODO
-func (h *handler) tasksNew(c *gin.Context) {}
-
-// TODO
-func (h *handler) tasksDetail(c *gin.Context) {}
-
-// TODO
-func (h *handler) tasksUpdate(c *gin.Context) {}
-
-// TODO
-func (h *handler) tasksDelete(c *gin.Context) {}
 
 func responseOK(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "ok"})

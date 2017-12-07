@@ -76,12 +76,6 @@ func (r *Controller) registerRoutes() {
 	jobs.PUT("/:id", h.jobsUpdate)
 	jobs.DELETE("/:id", h.jobsDelete)
 
-	tasks := r.server.Group("/tasks")
-	tasks.POST("/new", h.tasksNew)
-	tasks.GET("/:id", h.tasksDetail)
-	tasks.PUT("/:id", h.tasksUpdate)
-	tasks.DELETE("/:id", h.tasksDelete)
-
 	admin := r.server.Group("/admin")
 	admin.GET("/jobs/run/:id", h.jobsRun)
 	admin.GET("/jobs/reload", h.jobsReload)

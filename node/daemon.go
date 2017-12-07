@@ -137,7 +137,7 @@ func (d *daemon) getJob(id uint) (JobRequest, error) {
 	var job Job
 	var tasks []Task
 	var data JobRequest
-	err = d.db.Where("deleted_at IS NULL").Order("created_at DESC").Find(&job).Related(&tasks).Error
+	err = d.db.Where("deleted_at IS NULL").Where("id = ?", id).Order("created_at DESC").Find(&job).Related(&tasks).Error
 	if err != nil {
 		return data, err
 	}
@@ -160,16 +160,29 @@ func (d *daemon) updateJob(id uint, data Job) error {
 	if err = d.db.Where("deleted_at IS NULL").Where("id = ?", id).Find(&job).Error; err != nil {
 		return err
 	}
+	// TODO: update tasks
 	return d.db.Model(&job).Updates(data).Error
 }
 
 func (d *daemon) deleteJob(id uint) error {
-	var job Job
 	var err error
-	if err = d.db.Where("deleted_at IS NULL").Where("id = ?", id).Find(&job).Error; err != nil {
+	var job Job
+	var tasks []Task
+	if err = d.db.Where("deleted_at IS NULL").Where("id = ?", id).Find(&job).Related(&tasks).Error; err != nil {
 		return err
 	}
-	return d.db.Delete(&job).Error
+	tx := d.db.Begin()
+	if err = d.db.Delete(&job).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	for _, task := range tasks {
+		if err = d.db.Delete(&task).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	return tx.Commit().Error
 }
 
 type jobDAG struct {
