@@ -91,15 +91,40 @@ func (h *handler) jobsUpdate(c *gin.Context) {
 		responseBadRequest(c, err)
 		return
 	}
+	if err = jr.validate(); err != nil {
+		responseBadRequest(c, err)
+		return
+	}
+	var tasks []Task
+	for _, task := range jr.Tasks {
+		t := Task{
+			JobID:     uint(id),
+			Name:      task.Name,
+			Command:   task.Command,
+			NextTasks: task.NextTasks,
+		}
+		if len(task.ID) > 0 {
+			id, err := strconv.Atoi(task.ID)
+			if err != nil || id <= 0 {
+				responseBadRequest(c, err)
+				return
+			}
+			t.ID = uint(id)
+		}
+		tasks = append(tasks, t)
+	}
 	job := Job{
 		Name:      jr.Name,
 		Schedule:  jr.Schedule,
 		RoutePath: jr.RoutePath,
+		Tasks:     tasks,
 	}
-	// TODO: update tasks
 	if err = h.daemon.updateJob(uint(id), job); err != nil {
 		responseBadRequest(c, err)
 		return
+	}
+	if err = h.daemon.reloadCron(); err != nil {
+		logrus.Errorf("failed to reload cron jobs, err: %s", err.Error())
 	}
 	responseOK(c)
 }

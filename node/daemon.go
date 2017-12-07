@@ -155,13 +155,48 @@ func (d *daemon) getJob(id uint) (JobRequest, error) {
 }
 
 func (d *daemon) updateJob(id uint, data Job) error {
-	var job Job
 	var err error
-	if err = d.db.Where("deleted_at IS NULL").Where("id = ?", id).Find(&job).Error; err != nil {
+	var job Job
+	var tasks []Task
+	if err = d.db.Where("deleted_at IS NULL").Where("id = ?", id).Find(&job).Related(&tasks).Error; err != nil {
 		return err
 	}
-	// TODO: update tasks
-	return d.db.Model(&job).Updates(data).Error
+	tx := d.db.Begin()
+	// update or create tasks
+	for _, taskToUpdate := range job.Tasks {
+		for _, taskInDB := range tasks {
+			if taskInDB.ID == taskToUpdate.ID {
+				if err = d.db.Model(&taskToUpdate).Updates(taskToUpdate).Error; err != nil {
+					tx.Rollback()
+					return err
+				}
+				continue
+			}
+		}
+		// new task
+		if err = d.db.Create(&taskToUpdate).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	// delete old tasks
+	for _, taskInDB := range tasks {
+		for _, taskToUpdate := range job.Tasks {
+			if taskInDB.ID == taskToUpdate.ID {
+				continue
+			}
+		}
+		if err = d.db.Delete(&taskInDB).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	// update job
+	if err = d.db.Model(&job).Updates(data).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit().Error
 }
 
 func (d *daemon) deleteJob(id uint) error {
