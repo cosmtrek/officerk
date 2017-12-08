@@ -19,7 +19,7 @@ type JobRequest struct {
 // TaskRequest ...
 type TaskRequest struct {
 	ID        string `json:"id,omitempty"`
-	JobID     string `json:"id,omitempty"`
+	JobID     string `json:"job_id,omitempty"`
 	Name      string `json:"name"`
 	Command   string `json:"command"`
 	NextTasks string `json:"next_tasks,omitempty"` // "task1,task2,task3"

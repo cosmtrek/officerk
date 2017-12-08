@@ -158,40 +158,52 @@ func (d *daemon) updateJob(id uint, data Job) error {
 	var err error
 	var job Job
 	var tasks []Task
-	if err = d.db.Where("deleted_at IS NULL").Where("id = ?", id).Find(&job).Related(&tasks).Error; err != nil {
+	if err = d.db.Where("deleted_at IS NULL").Where("id = ?", id).Find(&job).Error; err != nil {
+		return err
+	}
+	if err = d.db.Where("deleted_at IS NULL").Where("job_id = ?", job.ID).Find(&tasks).Error; err != nil {
 		return err
 	}
 	tx := d.db.Begin()
 	// update or create tasks
-	for _, taskToUpdate := range job.Tasks {
+	for _, taskToUpdate := range data.Tasks {
+		updated := false
 		for _, taskInDB := range tasks {
 			if taskInDB.ID == taskToUpdate.ID {
-				if err = d.db.Model(&taskToUpdate).Updates(taskToUpdate).Error; err != nil {
+				if err = d.db.Model(&taskInDB).Updates(taskToUpdate).Error; err != nil {
 					tx.Rollback()
 					return err
 				}
-				continue
+				updated = true
+				break
 			}
 		}
 		// new task
-		if err = d.db.Create(&taskToUpdate).Error; err != nil {
-			tx.Rollback()
-			return err
+		if !updated {
+			if err = d.db.Create(&taskToUpdate).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
 		}
 	}
 	// delete old tasks
 	for _, taskInDB := range tasks {
-		for _, taskToUpdate := range job.Tasks {
+		del := true
+		for _, taskToUpdate := range data.Tasks {
 			if taskInDB.ID == taskToUpdate.ID {
-				continue
+				del = false
+				break
 			}
 		}
-		if err = d.db.Delete(&taskInDB).Error; err != nil {
-			tx.Rollback()
-			return err
+		if del {
+			if err = d.db.Delete(&taskInDB).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
 		}
 	}
 	// update job
+	data.Tasks = nil
 	if err = d.db.Model(&job).Updates(data).Error; err != nil {
 		tx.Rollback()
 		return err

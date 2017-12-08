@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	"github.com/sirupsen/logrus"
 )
 
 type handler struct {
@@ -43,9 +42,7 @@ func (h *handler) jobsNew(c *gin.Context) {
 		responseBadRequest(c, err)
 		return
 	}
-	if err = h.daemon.reloadCron(); err != nil {
-		logrus.Errorf("failed to reload cron jobs, err: %s", err.Error())
-	}
+	h.daemon.restartCron()
 	responseOK(c)
 }
 
@@ -123,9 +120,7 @@ func (h *handler) jobsUpdate(c *gin.Context) {
 		responseBadRequest(c, err)
 		return
 	}
-	if err = h.daemon.reloadCron(); err != nil {
-		logrus.Errorf("failed to reload cron jobs, err: %s", err.Error())
-	}
+	h.daemon.restartCron()
 	responseOK(c)
 }
 
