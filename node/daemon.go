@@ -143,7 +143,11 @@ func (d *daemon) getJob(id uint) (JobRequest, error) {
 	var job Job
 	var tasks []Task
 	var data JobRequest
-	err = d.db.Where("deleted_at IS NULL").Where("id = ?", id).Order("created_at DESC").Find(&job).Related(&tasks).Error
+	err = d.db.Where("deleted_at IS NULL").Where("id = ?", id).Order("created_at DESC").Find(&job).Error
+	if err != nil {
+		return data, err
+	}
+	err = d.db.Where("deleted_at IS NULL").Where("job_id = ?", job.ID).Find(&tasks).Error
 	if err != nil {
 		return data, err
 	}
