@@ -69,7 +69,8 @@ func (r *Controller) registerRoutes() {
 	}
 	r.server.GET("/k", h.k)
 
-	jobs := r.server.Group("/jobs")
+	v1 := r.server.Group("/v1")
+	jobs := v1.Group("/jobs")
 	jobs.GET("/", h.jobsIndex)
 	jobs.POST("/new", h.jobsNew)
 	jobs.GET("/:id", h.jobsDetail)

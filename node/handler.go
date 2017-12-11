@@ -136,6 +136,7 @@ func (h *handler) jobsDelete(c *gin.Context) {
 		responseBadRequest(c, err)
 		return
 	}
+	h.daemon.restartCron()
 	responseOK(c)
 }
 

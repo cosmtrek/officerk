@@ -47,7 +47,7 @@ func (d *daemon) run() error {
 		}
 		d.cron.Start()
 		<-d.restartCronDoneCh
-		logrus.Debug("stop running, restarting...")
+		logrus.Debug("stop running cron, restarting...")
 	}
 	return nil
 }
@@ -58,7 +58,6 @@ func (d *daemon) reloadCron() error {
 		return errors.WithStack(err)
 	}
 	d.Lock()
-	logrus.Debug("new cron")
 	ncron := cron.New()
 	for _, job := range d.jobs {
 		logrus.Debugf("job: %s", job.job.Name)
@@ -67,10 +66,8 @@ func (d *daemon) reloadCron() error {
 			return errors.WithStack(err)
 		}
 	}
-	logrus.Debugf("before, old cron: %+v", d.cron)
 	d.cron.Stop()
 	d.cron = ncron
-	logrus.Debugf("after, ncron: %+v, d.cron: %+v", ncron, d.cron)
 	d.Unlock()
 	return nil
 }
@@ -143,12 +140,7 @@ func (d *daemon) getJob(id uint) (JobRequest, error) {
 	var job Job
 	var tasks []Task
 	var data JobRequest
-	err = d.db.Where("deleted_at IS NULL").Where("id = ?", id).Order("created_at DESC").Find(&job).Error
-	if err != nil {
-		return data, err
-	}
-	err = d.db.Where("deleted_at IS NULL").Where("job_id = ?", job.ID).Find(&tasks).Error
-	if err != nil {
+	if err = dbFetchJobAndTasks(d.db, id, &job, &tasks); err != nil {
 		return data, err
 	}
 	data.Name = job.Name
@@ -168,10 +160,7 @@ func (d *daemon) updateJob(id uint, data Job) error {
 	var err error
 	var job Job
 	var tasks []Task
-	if err = d.db.Where("deleted_at IS NULL").Where("id = ?", id).Find(&job).Error; err != nil {
-		return err
-	}
-	if err = d.db.Where("deleted_at IS NULL").Where("job_id = ?", job.ID).Find(&tasks).Error; err != nil {
+	if err = dbFetchJobAndTasks(d.db, id, &job, &tasks); err != nil {
 		return err
 	}
 	tx := d.db.Begin()
@@ -225,7 +214,7 @@ func (d *daemon) deleteJob(id uint) error {
 	var err error
 	var job Job
 	var tasks []Task
-	if err = d.db.Where("deleted_at IS NULL").Where("id = ?", id).Find(&job).Related(&tasks).Error; err != nil {
+	if err = dbFetchJobAndTasks(d.db, id, &job, &tasks); err != nil {
 		return err
 	}
 	tx := d.db.Begin()
