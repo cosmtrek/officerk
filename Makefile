@@ -5,7 +5,7 @@ LDFLAGS += -X "main.Version=$(shell git rev-parse HEAD)"
 init:
 	go get -u golang.org/x/tools/cmd/goimports
 	go get -u github.com/golang/lint/golint
-	go get -u github.com/Masterminds/glide
+	go get -u github.com/golang/dep/cmd/dep
 	@chmod +x ./hack/check.sh
 	@chmod +x ./hooks/pre-commit
 
@@ -14,7 +14,7 @@ setup: init
 	git init
 	@echo "Install pre-commit hook"
 	@ln -s $(shell pwd)/hooks/pre-commit $(shell pwd)/.git/hooks/pre-commit || true
-	glide init
+	dep init
 
 .PHONY: check
 check:
@@ -22,7 +22,7 @@ check:
 
 .PHONY: ci
 ci: init
-	@glide install
+	@dep ensure
 	@make check
 
 .PHONY: build

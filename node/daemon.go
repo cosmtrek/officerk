@@ -57,15 +57,21 @@ func (d *daemon) reloadCron() error {
 	if err = d.loadJobsFromDB(); err != nil {
 		return errors.WithStack(err)
 	}
-	d.RLock()
+	d.Lock()
+	logrus.Debug("new cron")
+	ncron := cron.New()
 	for _, job := range d.jobs {
 		logrus.Debugf("job: %s", job.job.Name)
-		err = d.cron.AddJob(job.job.Schedule, job)
+		err = ncron.AddJob(job.job.Schedule, job)
 		if err != nil {
 			return errors.WithStack(err)
 		}
 	}
-	d.RUnlock()
+	logrus.Debugf("before, old cron: %+v", d.cron)
+	d.cron.Stop()
+	d.cron = ncron
+	logrus.Debugf("after, ncron: %+v, d.cron: %+v", ncron, d.cron)
+	d.Unlock()
 	return nil
 }
 
