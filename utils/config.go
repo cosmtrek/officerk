@@ -1,20 +1,21 @@
-package node
+package utils
 
 import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/jinzhu/gorm"
 	"github.com/pelletier/go-toml"
 )
 
 const (
-	defaultServerPort = "9392"
+	defaultMasterServerPort = "9392"
+	defaultNodeServerPort   = "9100"
 )
 
-type config struct {
-	Master   master   `toml:"master"`
+type Config struct {
 	Database database `toml:"database"`
+	Master   master   `toml:"master"`
+	Node     node     `toml:"node"`
 }
 
 type database struct {
@@ -29,12 +30,16 @@ type master struct {
 	ServerPort string `toml:"server_port"`
 }
 
-func newConfig(path string) (*config, error) {
+type node struct {
+	ServerPort string `toml:"server_port"`
+}
+
+func NewConfig(path string) (*Config, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	c := config{}
+	c := Config{}
 	if err = toml.Unmarshal(data, &c); err != nil {
 		return nil, err
 	}
@@ -42,19 +47,23 @@ func newConfig(path string) (*config, error) {
 }
 
 // MySQL dsn
-func (c *config) MySQL() string {
+func (c *Config) MySQL() string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		c.Database.User, c.Database.Password, c.Database.Host, c.Database.Port, c.Database.Dbname)
 }
 
-func (c *config) serverPort() string {
+func (c *Config) MasterServerPort() string {
 	port := c.Master.ServerPort
 	if port == "" {
-		return defaultServerPort
+		return defaultMasterServerPort
 	}
 	return port
 }
 
-func connectDB(c *config) (*gorm.DB, error) {
-	return gorm.Open("mysql", c.MySQL())
+func (c *Config) NodeServerPort() string {
+	port := c.Node.ServerPort
+	if port == "" {
+		return defaultNodeServerPort
+	}
+	return port
 }

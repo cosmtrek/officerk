@@ -1,9 +1,16 @@
 package node
 
 import (
-	"github.com/gin-gonic/gin"
+	"net/http"
+
+	"github.com/go-chi/chi"
+	"github.com/go-chi/render"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
+
+	"github.com/cosmtrek/officerk/node/api"
+	"github.com/cosmtrek/officerk/node/daemon"
+	"github.com/cosmtrek/officerk/utils"
 )
 
 func init() {
@@ -12,72 +19,59 @@ func init() {
 
 // Controller represents a working node
 type Controller struct {
-	config *config
-	db     *gorm.DB
-	server *gin.Engine
-	daemon *daemon
+	config    *utils.Config
+	db        *gorm.DB
+	router    *chi.Mux
+	jobDaemon *daemon.Engine
 }
 
 // NewController returns a node
 func NewController(path string) (*Controller, error) {
 	var err error
-	cfg, err := newConfig(path)
+	cfg, err := utils.NewConfig(path)
 	if err != nil {
 		return nil, err
 	}
-	db, err := connectDB(cfg)
+	db, err := utils.OpenDB(cfg)
 	if err != nil {
 		return nil, err
 	}
-	server := gin.Default()
-	daemon, err := newDaemon(db)
+	router := chi.NewRouter()
+	jobDaemon, err := daemon.NewEngine(db)
 	if err != nil {
 		return nil, err
 	}
 	return &Controller{
-		config: cfg,
-		db:     db,
-		server: server,
-		daemon: daemon,
+		config:    cfg,
+		db:        db,
+		router:    router,
+		jobDaemon: jobDaemon,
 	}, nil
 }
 
 // Run starts work
-func (r *Controller) Run() {
+func (ctr *Controller) Run() {
 	logrus.Info("node is running...")
 	var err error
-	if err = r.autoMigrate(); err != nil {
-		logrus.Fatal(err)
-	}
 	go func() {
-		logrus.Info("daemon is running...")
-		if err = r.daemon.run(); err != nil {
+		// TODO: signal
+		logrus.Info("job daemon is running...")
+		if err = ctr.jobDaemon.Run(); err != nil {
 			logrus.Fatal(err)
 		}
 	}()
-	logrus.Info("server is running, port: " + r.config.serverPort())
-	r.registerRoutes()
-	if err = r.server.Run(":" + r.config.serverPort()); err != nil {
+	ctr.registerRoutes()
+	logrus.Info("server is running, port: " + ctr.config.NodeServerPort())
+	if err = http.ListenAndServe(":"+ctr.config.NodeServerPort(), ctr.router); err != nil {
 		logrus.Fatal(err)
 	}
 }
 
-func (r *Controller) registerRoutes() {
-	h := handler{
-		db:     r.db,
-		daemon: r.daemon,
-	}
-	r.server.GET("/k", h.k)
+func (ctr *Controller) registerRoutes() {
+	h := api.NewHandler(ctr.jobDaemon)
+	r := ctr.router
+	r.Use(render.SetContentType(render.ContentTypeJSON))
 
-	v1 := r.server.Group("/v1")
-	jobs := v1.Group("/jobs")
-	jobs.GET("/", h.jobsIndex)
-	jobs.POST("/new", h.jobsNew)
-	jobs.GET("/:id", h.jobsDetail)
-	jobs.PUT("/:id", h.jobsUpdate)
-	jobs.DELETE("/:id", h.jobsDelete)
-
-	admin := r.server.Group("/admin")
-	admin.GET("/jobs/run/:id", h.jobsRun)
-	admin.GET("/jobs/reload", h.jobsReload)
+	r.Get("/reload_jobs", h.ReloadJobs)
+	r.Get("/jobs/{jobID}/run", h.RunJob)
 }

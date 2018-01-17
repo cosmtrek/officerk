@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	"github.com/cosmtrek/officerk/node"
+	"github.com/cosmtrek/officerk/master"
 	"github.com/sirupsen/logrus"
 )
 
@@ -18,7 +18,7 @@ func main() {
 	flag.Parse()
 
 	var err error
-	ctr, err := node.NewController(cfg)
+	ctr, err := master.NewController(cfg)
 	if err != nil {
 		logrus.Fatal(err)
 	}

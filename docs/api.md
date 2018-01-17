@@ -2,17 +2,35 @@
 
 Draft
 
-## V1
+## Master
+
+### Nodes
+
+#### Get nodes
+
+`GET /nodes/`
+
+### Create new node
+
+`POST /nodes/`
+
+```
+params:
+{
+    "name": "node",
+    "ip": "127.0.0.1"
+}
+```
 
 ### Jobs
 
 #### Get jobs
 
-`GET /v1/jobs/`
+`GET /jobs/`
 
 #### Create new job
 
-`POST /v1/jobs/new`
+`POST /jobs/`
 
 ```
 params:
@@ -43,12 +61,12 @@ params:
 
 #### Get the job detail
 
-`GET /v1/jobs/:id`
+`GET /jobs/:id`
 
 
 #### Update the job
 
-`PUT /v1/jobs/:id`
+`PUT /jobs/:id`
 
 ```
 params:
@@ -82,4 +100,4 @@ params:
 
 #### Delete the job
 
-`DELETE /v1/jobs/:id`
+`DELETE /jobs/:id`
