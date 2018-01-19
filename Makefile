@@ -43,12 +43,12 @@ run-node:
 
 .PHONY: build-docker-master
 build-docker-master:
-	GOOS=linux go build -ldflags '$(LDFLAGS)' -o ./binary/linux/officerk-master ./cmd/master/
+	GOOS=linux go build -ldflags '$(LDFLAGS) -s -w' -o ./binary/linux/officerk-master ./cmd/master/
 	docker build -t cosmtrek/officerk-master -f ./binary/Dockerfile.master .
 
 .PHONY: build-docker-node
 build-docker-node:
-	GOOS=linux go build -ldflags '$(LDFLAGS)' -o ./binary/linux/officerk-node ./cmd/node
+	GOOS=linux go build -ldflags '$(LDFLAGS) -s -w' -o ./binary/linux/officerk-node ./cmd/node
 	docker build -t cosmtrek/officerk-node -f ./binary/Dockerfile.node .
 
 .PHONY: run-docker-master

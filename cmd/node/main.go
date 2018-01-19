@@ -11,6 +11,9 @@ import (
 )
 
 var (
+	BuildTimestamp string
+	Version        string
+
 	cfgPath string
 	isDebug bool
 	ip      string
@@ -32,7 +35,7 @@ func init() {
 }
 
 func main() {
-	fmt.Println(utils.NodeLogo())
+	fmt.Println(utils.NodeLogo(BuildTimestamp, Version))
 
 	var err error
 	cfg, err := utils.NewConfig(cfgPath)
