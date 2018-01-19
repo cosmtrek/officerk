@@ -156,3 +156,18 @@ func ReloadJobsOnNode(endpoint property.NodeService) error {
 	}
 	return errors.New(string(body))
 }
+
+// GetJobLogs ...
+func GetJobLogs(db *gorm.DB, j *models.Job) ([]*models.JobLog, error) {
+	var err error
+	logs := make([]*models.JobLog, 0)
+	err = db.Where("deleted_at IS NULL").Where("job_id = ?", j.ID).
+		Order("updated_at desc").Limit(20).Find(&logs).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return logs, nil
+		}
+		return nil, err
+	}
+	return logs, nil
+}

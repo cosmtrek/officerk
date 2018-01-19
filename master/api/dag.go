@@ -1,10 +1,13 @@
 package api
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/cosmtrek/supergo/dag"
 	"github.com/pkg/errors"
+
+	"github.com/cosmtrek/officerk/models"
 )
 
 func checkTasksDependencyCircle(j *JobRequest) error {
@@ -55,4 +58,41 @@ func checkTasksDependencyCircle(j *JobRequest) error {
 		return errors.Errorf("found circle in this job, circle path: %s", dagChecker.CirclePath())
 	}
 	return nil
+}
+
+type Graph struct {
+	Nodes []models.Task `json:"nodes"`
+	Edges []edge        `json:"edge"`
+}
+
+type edge struct {
+	Source string `json:"source"`
+	Target string `json:"target"`
+	ID     string `json:"id"`
+}
+
+func newGraph(job *models.Job) *Graph {
+	nodes := job.Tasks
+	if len(nodes) == 0 {
+		return nil
+	}
+	edges := make([]edge, 0)
+	for _, node := range nodes {
+		if len(node.NextTasks) == 0 {
+			continue
+		}
+		// TODO: hash task name
+		tasks := strings.Split(node.NextTasks, ",")
+		for _, task := range tasks {
+			edges = append(edges, edge{
+				Source: node.Name,
+				Target: task,
+				ID:     fmt.Sprintf("%s-%s", node.Name, task),
+			})
+		}
+	}
+	return &Graph{
+		Nodes: nodes,
+		Edges: edges,
+	}
 }

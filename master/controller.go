@@ -102,8 +102,11 @@ func (ctr *Controller) registerRoutes() {
 			r.Put("/", h.UpdateJob)
 			r.Delete("/", h.DeleteJob)
 			r.Get("/run", h.RunJob)
+			r.Get("/logs", h.GetJobLogs)
 		})
 	})
+
+	r.Get("/joblogs/{joblogID}/", h.GetJobLog)
 
 	r.Route("/nodes", func(r chi.Router) {
 		r.Get("/", h.ListNodes)

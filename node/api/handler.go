@@ -26,7 +26,7 @@ func NewHandler(dm *daemon.Engine) *Handler {
 // ReloadJobs ...
 func (h *Handler) ReloadJobs(w http.ResponseWriter, r *http.Request) {
 	h.jobDaemon.Reload()
-	render.Render(w, r, api.SuccessResponse("{}"))
+	render.Render(w, r, api.OK("{}"))
 }
 
 // RunJob ...
@@ -46,5 +46,5 @@ func (h *Handler) RunJob(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, api.ErrInvalidRequest(err))
 		return
 	}
-	render.Render(w, r, api.SuccessResponse("{}"))
+	render.Render(w, r, api.OK("{}"))
 }

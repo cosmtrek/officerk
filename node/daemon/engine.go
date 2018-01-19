@@ -84,7 +84,7 @@ func (e *Engine) reloadCron() error {
 	e.Lock()
 	ncron := cron.New()
 	for _, dag := range e.jobDAGs {
-		logrus.Debugf("job: %s", dag.Job().Name)
+		logrus.Debugf("% job: %s", dag.Job().Name)
 		err = ncron.AddJob(dag.Job().Schedule, dag)
 		if err != nil {
 			return errors.WithStack(err)

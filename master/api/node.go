@@ -55,7 +55,7 @@ func (h *Handler) ListNodes(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, api.ErrNotFound)
 		return
 	}
-	render.RenderList(w, r, NewNodeListResponse(nodes))
+	render.Render(w, r, api.OK(NewNodeListResponse(nodes)))
 
 }
 
@@ -72,5 +72,5 @@ func (h *Handler) CreateNode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	render.Status(r, http.StatusCreated)
-	render.Render(w, r, NewNodeResponse(data.Node))
+	render.Render(w, r, api.OK(NewNodeResponse(data.Node)))
 }

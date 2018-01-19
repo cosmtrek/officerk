@@ -46,27 +46,28 @@ func (j JobDAG) Job() models.Job {
 func (j JobDAG) Run() {
 	var err error
 	// TODO: if this job is failed, then abort it until it'll be fixed?
-	logrus.Debugf("=== run job[%d]: %s", j.job.ID, j.job.Name)
+	logrus.Debugf("=> job[%d]: %s", j.job.ID, j.job.Name)
 	jobLog, err := CreateJobLog(j.db, j.job.ID)
 	if err != nil {
 		logrus.Errorf("failed to create job log, err: %s", err)
 		return
 	}
 	for _, t := range j.topoOrder {
-		taskLog, err := CreateTaskLog(j.db, t.JobID, t.ID)
+		taskLog, err := CreateTaskLog(j.db, jobLog.ID, t.ID)
 		if err != nil {
 			logrus.Errorf("failed to create task log, err: %s", err)
 			return
 		}
 		// TODO: retry?
-		if err = RunTask(j.db, t); err != nil {
+		result, err := RunTask(j.db, t)
+		if err != nil {
 			logrus.Errorf("failed to run task %s, err: %s", t.Name, err)
-			if err = UpdateTaskLogStatus(j.db, taskLog, models.TaskFailed); err != nil {
+			if err = UpdateTaskLogStatus(j.db, taskLog, models.TaskFailed, result); err != nil {
 				logrus.Errorf("failed to update task log, err: %s", err)
 				return
 			}
 		}
-		if err = UpdateTaskLogStatus(j.db, taskLog, models.TaskSucceed); err != nil {
+		if err = UpdateTaskLogStatus(j.db, taskLog, models.TaskSucceed, result); err != nil {
 			logrus.Errorf("failed to update task log, err: %s", err)
 			return
 		}

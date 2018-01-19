@@ -47,11 +47,12 @@ func (j *JobRequest) Bind(r *http.Request) error {
 // JobResponse ...
 type JobResponse struct {
 	*models.Job
+	Graph *Graph `json:"graph,omitempty"`
 }
 
 // NewJobResponse ...
 func NewJobResponse(job *models.Job) *JobResponse {
-	return &JobResponse{Job: job}
+	return &JobResponse{Job: job, Graph: newGraph(job)}
 }
 
 // Render for JobResponse
@@ -98,7 +99,7 @@ func (h *Handler) ListJobs(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, api.ErrNotFound)
 		return
 	}
-	render.RenderList(w, r, NewJobListResponse(jobs))
+	render.Render(w, r, api.OK(NewJobListResponse(jobs)))
 }
 
 // CreateJob creates job
@@ -118,13 +119,13 @@ func (h *Handler) CreateJob(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	render.Status(r, http.StatusCreated)
-	render.Render(w, r, NewJobResponse(data.Job))
+	render.Render(w, r, api.OK(NewJobResponse(data.Job)))
 }
 
 // GetJob find the job
 func (h *Handler) GetJob(w http.ResponseWriter, r *http.Request) {
 	job := r.Context().Value(jobKey).(*models.Job)
-	render.Render(w, r, NewJobResponse(job))
+	render.Render(w, r, api.OK(NewJobResponse(job)))
 }
 
 // UpdateJob updates the job
@@ -144,7 +145,7 @@ func (h *Handler) UpdateJob(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, api.ErrNodeResponse(err))
 		return
 	}
-	render.Render(w, r, NewJobResponse(data.Job))
+	render.Render(w, r, api.OK(NewJobResponse(data.Job)))
 }
 
 // DeleteJob deletes the job
@@ -159,7 +160,7 @@ func (h *Handler) DeleteJob(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, api.ErrNodeResponse(err))
 		return
 	}
-	render.Render(w, r, api.SuccessResponse("{}"))
+	render.Render(w, r, api.OK("{}"))
 }
 
 // RunJob ...
@@ -175,7 +176,7 @@ func (h *Handler) RunJob(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, api.ErrInvalidRequest(err))
 		return
 	}
-	render.Render(w, r, api.SuccessResponse("{}"))
+	render.Render(w, r, api.OK("{}"))
 }
 
 func (h *Handler) reloadJobsOnNode(job *models.Job) error {

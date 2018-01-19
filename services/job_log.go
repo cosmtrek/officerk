@@ -25,3 +25,10 @@ func UpdateJobLogStatus(db *gorm.DB, jl *models.JobLog, status models.JobStatus)
 	}
 	return err
 }
+
+// GetJobLog gets job log
+func GetJobLog(db *gorm.DB, id string, l *models.JobLog) error {
+	// TODO: may load lots of task logs
+	return db.Where("deleted_at IS NULL").Where("id = ?", id).
+		Preload("TaskLogs").First(l).Error
+}

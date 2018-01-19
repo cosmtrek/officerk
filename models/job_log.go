@@ -19,5 +19,7 @@ type JobLog struct {
 	Comm
 	JobID  uint      `gorm:"not null" json:"job_id"`
 	Status JobStatus `gorm:"not null" json:"status"`
-	Retry  int
+	Retry  int       `json:"-"`
+
+	TaskLogs []TaskLog `gorm:"ForeignKey:JobLogID" json:"task_logs,omitempty"`
 }

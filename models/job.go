@@ -20,8 +20,8 @@ type Job struct {
 	Typ      string `gorm:"not null" json:"typ"`
 	Schedule string `json:"schedule,omitempty"`
 	Slug     string `json:"slug,omitempty"`
-	NodeID   uint   `gorm:"not null" json:"-"`
+	NodeID   uint   `gorm:"not null" json:"node_id"`
 
 	Node  Node   `json:"node"`
-	Tasks []Task `gorm:"ForeignKey:JobID" json:"tasks"`
+	Tasks []Task `gorm:"ForeignKey:JobID" json:"tasks,omitempty"`
 }

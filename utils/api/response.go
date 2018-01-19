@@ -8,8 +8,8 @@ import (
 
 // OKResponse ...
 type OKResponse struct {
-	HTTPStatusCode int    `json:"-"`
-	Data           string `json:"data"`
+	HTTPStatusCode int         `json:"-"`
+	Data           interface{} `json:"data"`
 }
 
 // Render ...
@@ -18,12 +18,16 @@ func (ok *OKResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-// SuccessResponse ...
-func SuccessResponse(data string) render.Renderer {
+// OK ...
+func OK(data interface{}) render.Renderer {
 	return &OKResponse{
 		HTTPStatusCode: 200,
 		Data:           data,
 	}
+}
+
+type DataBody struct {
+	Data interface{} `json:"data"`
 }
 
 // ErrResponse ...
