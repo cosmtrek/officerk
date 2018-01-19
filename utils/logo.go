@@ -15,21 +15,26 @@ $$ \__$$ |$$ |      $$ |      $$ |$$ \_____ $$$$$$$$/ $$ |      $$ |$$  \
 $$    $$/ $$ |      $$ |      $$ |$$       |$$       |$$ |      $$ | $$  |
  $$$$$$/  $$/       $$/       $$/  $$$$$$$/  $$$$$$$/ $$/       $$/   $$/
 
-            A Distributed DAG Based Job System - v0.1
+              A Distributed DAG Based Job System
+
+- build timestamp: %s
+- commit: %s
 -------------------------------------------------------------------------`
 
 // MasterLogo ...
-func MasterLogo() string {
+func MasterLogo(timestamp string, commit string) string {
+	l := fmt.Sprintf(logo, timestamp, commit)
 	master := `
                    MASTER - I'm Your Father!
 =========================================================================`
-	return fmt.Sprintf("%s%s\n", logo, master)
+	return fmt.Sprintf("%s%s\n", l, master)
 }
 
 // NodeLogo ...
-func NodeLogo() string {
+func NodeLogo(timestamp string, commit string) string {
+	l := fmt.Sprintf(logo, timestamp, commit)
 	node := `
                    NODE - Where's My Father?
 =========================================================================`
-	return fmt.Sprintf("%s%s\n", logo, node)
+	return fmt.Sprintf("%s%s\n", l, node)
 }

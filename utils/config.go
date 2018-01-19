@@ -22,7 +22,7 @@ type Config struct {
 }
 
 type database struct {
-	Host     string `toml:"localhost"`
+	Host     string `toml:"host"`
 	Port     string `toml:"port"`
 	User     string `toml:"user"`
 	Dbname   string `toml:"dbname"`

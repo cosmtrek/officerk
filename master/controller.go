@@ -45,15 +45,18 @@ func NewController(cfg *utils.Config, opt *Option) (*Controller, error) {
 	}
 	runtime.IsDebug = opt.IsDebug
 
-	db, err := utils.OpenDB(cfg)
-	if err != nil {
-		return nil, err
-	}
-	router := chi.NewRouter()
 	etcd, err := utils.NewEtcdClient(cfg)
 	if err != nil {
 		return nil, err
 	}
+
+	db, err := utils.OpenDB(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	router := chi.NewRouter()
+
 	return &Controller{
 		runtime: runtime,
 		config:  cfg,

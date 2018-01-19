@@ -1,0 +1,10 @@
+FROM alpine:latest
+
+MAINTAINER Rick Yu <cosmtrek@gmail.com>
+
+ENV GOPATH /go
+
+COPY ./binary/linux/officerk-node /go/bin/
+COPY ./conf/docker.conf /conf/docker.conf
+
+ENTRYPOINT ["/go/bin/officerk-node", "-c", "/conf/docker.conf"]

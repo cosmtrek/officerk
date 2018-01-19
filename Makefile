@@ -25,18 +25,36 @@ ci: init
 	@dep ensure
 	@make check
 
-.PHONY: build
-build: check
-	go build -ldflags '$(LDFLAGS)'
+.PHONY: build-master
+build-master: check
+	go build -ldflags '$(LDFLAGS)' -o ./binary/darwin/officerk-master ./cmd/master/
 
-.PHONY: install
-install: check
-	go install -ldflags '$(LDFLAGS)'
+.PHONY: run-master
+run-master:
+	./binary/darwin/officerk-master -c ./conf/app.conf -d
 
-.PHONY: master
-master:
-	go run ./cmd/master/main.go -c ./conf/app.conf
+.PHONY: build-node
+build-node: check
+	go build -ldflags '$(LDFLAGS)' -o ./binary/darwin/officerk-node ./cmd/node
 
-.PHONY: node
-node:
-	go run ./cmd/node/main.go -c ./conf/app.conf
+.PHONY: run-node
+run-node:
+	./binary/darwin/officerk-node -c ./conf/app.conf -d
+
+.PHONY: build-docker-master
+build-docker-master:
+	GOOS=linux go build -ldflags '$(LDFLAGS)' -o ./binary/linux/officerk-master ./cmd/master/
+	docker build -t cosmtrek/officerk-master -f ./binary/Dockerfile.master .
+
+.PHONY: build-docker-node
+build-docker-node:
+	GOOS=linux go build -ldflags '$(LDFLAGS)' -o ./binary/linux/officerk-node ./cmd/node
+	docker build -t cosmtrek/officerk-node -f ./binary/Dockerfile.node .
+
+.PHONY: run-docker-master
+run-docker-master:
+	docker run -it --rm -p 9392:9392 cosmtrek/officerk-master -d
+
+.PHONY: run-docker-node
+run-docker-node:
+	docker run -it --rm cosmtrek/officerk-node -d

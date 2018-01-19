@@ -1,0 +1,12 @@
+FROM alpine:latest
+
+MAINTAINER Rick Yu <cosmtrek@gmail.com>
+
+ENV GOPATH /go
+
+COPY ./binary/linux/officerk-master /go/bin/
+COPY ./conf/docker.conf /conf/docker.conf
+
+ENTRYPOINT ["/go/bin/officerk-master", "-c", "/conf/docker.conf"]
+
+EXPOSE 9392

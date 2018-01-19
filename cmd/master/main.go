@@ -11,6 +11,9 @@ import (
 )
 
 var (
+	BuildTimestamp string
+	Version        string
+
 	cfgPath string
 	isDebug bool
 	port    string
@@ -30,7 +33,7 @@ func init() {
 }
 
 func main() {
-	fmt.Println(utils.MasterLogo())
+	fmt.Println(utils.MasterLogo(BuildTimestamp, Version))
 
 	var err error
 	cfg, err := utils.NewConfig(cfgPath)
