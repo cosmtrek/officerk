@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"github.com/pelletier/go-toml"
 )
@@ -12,8 +13,10 @@ const (
 	defaultNodeServerPort   = "9100"
 )
 
+// Config ...
 type Config struct {
 	Database database `toml:"database"`
+	Etcd     etcd     `toml:"etcd"`
 	Master   master   `toml:"master"`
 	Node     node     `toml:"node"`
 }
@@ -26,6 +29,10 @@ type database struct {
 	Password string `toml:"password"`
 }
 
+type etcd struct {
+	Endpoints string `toml:"endpoints"`
+}
+
 type master struct {
 	ServerPort string `toml:"server_port"`
 }
@@ -34,6 +41,7 @@ type node struct {
 	ServerPort string `toml:"server_port"`
 }
 
+// NewConfig ...
 func NewConfig(path string) (*Config, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -52,6 +60,7 @@ func (c *Config) MySQL() string {
 		c.Database.User, c.Database.Password, c.Database.Host, c.Database.Port, c.Database.Dbname)
 }
 
+// MasterServerPort ...
 func (c *Config) MasterServerPort() string {
 	port := c.Master.ServerPort
 	if port == "" {
@@ -60,10 +69,16 @@ func (c *Config) MasterServerPort() string {
 	return port
 }
 
+// NodeServerPort ...
 func (c *Config) NodeServerPort() string {
 	port := c.Node.ServerPort
 	if port == "" {
 		return defaultNodeServerPort
 	}
 	return port
+}
+
+// EtcdEndpoints ...
+func (c *Config) EtcdEndpoints() []string {
+	return strings.Split(c.Etcd.Endpoints, ",")
 }

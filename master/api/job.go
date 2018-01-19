@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/render"
 	"github.com/pkg/errors"
 
+	"github.com/cosmtrek/officerk/master/property"
 	"github.com/cosmtrek/officerk/models"
 	"github.com/cosmtrek/officerk/services"
 	"github.com/cosmtrek/officerk/utils/api"
@@ -112,7 +113,10 @@ func (h *Handler) CreateJob(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, api.ErrInvalidRequest(err))
 		return
 	}
-	// TODO: notify node to reload cron daemon
+	if err = h.reloadJobsOnNode(data.Job); err != nil {
+		render.Render(w, r, api.ErrNodeResponse(err))
+		return
+	}
 	render.Status(r, http.StatusCreated)
 	render.Render(w, r, NewJobResponse(data.Job))
 }
@@ -136,7 +140,10 @@ func (h *Handler) UpdateJob(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, api.ErrInvalidRequest(err))
 		return
 	}
-	// TODO: notify node to reload cron daemon
+	if err = h.reloadJobsOnNode(job); err != nil {
+		render.Render(w, r, api.ErrNodeResponse(err))
+		return
+	}
 	render.Render(w, r, NewJobResponse(data.Job))
 }
 
@@ -148,11 +155,33 @@ func (h *Handler) DeleteJob(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, api.ErrInvalidRequest(err))
 		return
 	}
-	// TODO: notify node to reload cron daemon
+	if err = h.reloadJobsOnNode(job); err != nil {
+		render.Render(w, r, api.ErrNodeResponse(err))
+		return
+	}
 	render.Render(w, r, api.SuccessResponse("{}"))
 }
 
 // RunJob ...
 func (h *Handler) RunJob(w http.ResponseWriter, r *http.Request) {
-	// TODO: find nodes to run the job
+	var err error
+	job := r.Context().Value(jobKey).(*models.Job)
+	endpoint, err := h.runtime.FindNode(property.NodeIP(job.Node.IP))
+	if err != nil {
+		render.Render(w, r, api.ErrInvalidRequest(err))
+		return
+	}
+	if err = services.RunJobOnNode(job, endpoint); err != nil {
+		render.Render(w, r, api.ErrInvalidRequest(err))
+		return
+	}
+	render.Render(w, r, api.SuccessResponse("{}"))
+}
+
+func (h *Handler) reloadJobsOnNode(job *models.Job) error {
+	endpoint, err := h.runtime.FindNode(property.NodeIP(job.Node.IP))
+	if err != nil {
+		return err
+	}
+	return services.ReloadJobsOnNode(endpoint)
 }

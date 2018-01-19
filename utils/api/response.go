@@ -55,6 +55,16 @@ func ErrInvalidRequest(err error) render.Renderer {
 	}
 }
 
+// ErrNodeResponse ...
+func ErrNodeResponse(err error) render.Renderer {
+	return &ErrResponse{
+		Err:            err,
+		HTTPStatusCode: 500,
+		StatusText:     "Invalid node response.",
+		ErrorText:      err.Error(),
+	}
+}
+
 // ErrRender ...
 func ErrRender(err error) render.Renderer {
 	return &ErrResponse{

@@ -8,13 +8,13 @@ import (
 	"github.com/robfig/cron"
 	"github.com/sirupsen/logrus"
 
+	"github.com/cosmtrek/officerk/node/property"
 	"github.com/cosmtrek/officerk/services"
-	"github.com/cosmtrek/officerk/utils"
 )
 
 // Engine ...
 type Engine struct {
-	ip                string // where node runs
+	runtime           *property.Runtime
 	db                *gorm.DB
 	cron              *cron.Cron
 	restartCronCh     chan bool
@@ -25,14 +25,9 @@ type Engine struct {
 }
 
 // NewEngine ...
-func NewEngine(db *gorm.DB) (*Engine, error) {
-	ip, err := utils.GetIP()
-	if err != nil {
-		return nil, err
-	}
-	logrus.Debugf("Node IP: %s", ip)
+func NewEngine(db *gorm.DB, runtime *property.Runtime) (*Engine, error) {
 	return &Engine{
-		ip:                ip,
+		runtime:           runtime,
 		db:                db,
 		cron:              cron.New(),
 		restartCronCh:     make(chan bool),
@@ -103,7 +98,7 @@ func (e *Engine) reloadCron() error {
 
 func (e *Engine) fetchJobs() error {
 	var err error
-	jobs, err := services.GetJobsByNodeIP(e.db, e.ip)
+	jobs, err := services.GetJobsByNodeIP(e.db, e.runtime.IP)
 	if err != nil {
 		return err
 	}
