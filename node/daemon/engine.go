@@ -8,6 +8,7 @@ import (
 	"github.com/robfig/cron"
 	"github.com/sirupsen/logrus"
 
+	"github.com/cosmtrek/officerk/models"
 	"github.com/cosmtrek/officerk/node/property"
 	"github.com/cosmtrek/officerk/services"
 )
@@ -84,10 +85,13 @@ func (e *Engine) reloadCron() error {
 	e.Lock()
 	ncron := cron.New()
 	for _, dag := range e.jobDAGs {
-		logrus.Debugf("% job: %s", dag.Job().Name)
-		err = ncron.AddJob(dag.Job().Schedule, dag)
-		if err != nil {
-			return errors.WithStack(err)
+		logrus.Debugf("# job: %s", dag.Job().Name)
+		if dag.Job().Typ == models.JobTypeCron {
+			logrus.Debugf("@ cron job: %s", dag.Job().Name)
+			err = ncron.AddJob(dag.Job().Schedule, dag)
+			if err != nil {
+				return errors.WithStack(err)
+			}
 		}
 	}
 	e.cron.Stop()

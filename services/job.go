@@ -16,15 +16,9 @@ import (
 
 // CreateJob creates job
 func CreateJob(db *gorm.DB, j *models.Job) error {
-	var err error
-	tx := db.Begin()
 	// TODO: check node id
 	// TODO: check slug
-	if err = tx.Create(j).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
-	return tx.Commit().Error
+	return db.Create(j).Error
 }
 
 // UpdateJob updates job

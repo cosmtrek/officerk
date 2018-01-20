@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi"
@@ -180,6 +181,13 @@ func (h *Handler) RunJob(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) reloadJobsOnNode(job *models.Job) error {
+	var err error
+	if len(job.Node.IP) == 0 {
+		err = services.GetJob(db, strconv.Itoa(int(job.ID)), job)
+		if err != nil {
+			return err
+		}
+	}
 	endpoint, err := h.runtime.FindNode(property.NodeIP(job.Node.IP))
 	if err != nil {
 		return err

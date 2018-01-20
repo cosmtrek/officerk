@@ -52,28 +52,42 @@ func (j JobDAG) Run() {
 		logrus.Errorf("failed to create job log, err: %s", err)
 		return
 	}
+	taskFailed := false
 	for _, t := range j.topoOrder {
 		taskLog, err := CreateTaskLog(j.db, jobLog.ID, t.ID)
 		if err != nil {
 			logrus.Errorf("failed to create task log, err: %s", err)
 			return
 		}
-		// TODO: retry?
+		// TODO: retry
 		result, err := RunTask(j.db, t)
 		if err != nil {
+			taskFailed = true
 			logrus.Errorf("failed to run task %s, err: %s", t.Name, err)
 			if err = UpdateTaskLogStatus(j.db, taskLog, models.TaskFailed, result); err != nil {
+				logrus.Errorf("failed to update task log, err: %s", err)
+			}
+			// abort this job run
+			break
+		} else {
+			if err = UpdateTaskLogStatus(j.db, taskLog, models.TaskSucceed, result); err != nil {
 				logrus.Errorf("failed to update task log, err: %s", err)
 				return
 			}
 		}
-		if err = UpdateTaskLogStatus(j.db, taskLog, models.TaskSucceed, result); err != nil {
-			logrus.Errorf("failed to update task log, err: %s", err)
-			return
-		}
 	}
-	if err = UpdateJobLogStatus(j.db, jobLog, models.JobSucceed); err != nil {
-		logrus.Errorf("failed to update job status, err: %s", err)
+	if taskFailed {
+		if err = UpdateJobLogStatus(j.db, jobLog, models.JobFailed); err != nil {
+			logrus.Errorf("failed to update job status, err: %s", err)
+		}
+		// TODO: send alert notification
+		// b := new(bytes.Buffer)
+		// json.NewEncoder(b).Encode(jobLog)
+		// utils.SendAlert(b)
+	} else {
+		if err = UpdateJobLogStatus(j.db, jobLog, models.JobSucceed); err != nil {
+			logrus.Errorf("failed to update job status, err: %s", err)
+		}
 	}
 }
 

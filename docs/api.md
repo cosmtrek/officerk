@@ -1,16 +1,10 @@
 # API
 
-Draft
-
-## Master
-
-### Nodes
-
-#### Get nodes
+## Get nodes
 
 `GET /nodes/`
 
-### Create new node
+## Create new node
 
 `POST /nodes/`
 
@@ -22,13 +16,11 @@ params:
 }
 ```
 
-### Jobs
-
-#### Get jobs
+## Get jobs
 
 `GET /jobs/`
 
-#### Create new job
+## Create new job
 
 `POST /jobs/`
 
@@ -37,11 +29,12 @@ params:
 {
     "name": "job1",
     "schedule": "*/25 * * * *",
+    "typ": "1",
     "tasks": [
         {
             "name": "task1",
             "command": "echo 'task1 done'",
-            "next_tasks": "task2, task3"
+            "next_tasks": "task2,task3"
         },
         {
             "name": "task2",
@@ -59,12 +52,12 @@ params:
 }
 ```
 
-#### Get the job detail
+## Get the job detail
 
 `GET /jobs/:id`
 
 
-#### Update the job
+## Update the job
 
 `PUT /jobs/:id`
 
@@ -98,6 +91,14 @@ params:
 }
 ```
 
-#### Delete the job
+## Delete the job
 
 `DELETE /jobs/:id`
+
+## Get the job logs of a job
+
+`GET /jobs/:id/logs`
+
+## Get the detail of a job log
+
+`GET /joblogs/:id`

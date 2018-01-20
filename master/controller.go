@@ -111,12 +111,14 @@ func (ctr *Controller) registerRoutes() {
 		})
 	})
 
-	r.Get("/joblogs/{joblogID}/", h.GetJobLog)
+	r.Get("/joblogs", h.ListJobLogs)
+	r.Get("/joblogs/{joblogID}", h.GetJobLog)
 
 	r.Route("/nodes", func(r chi.Router) {
 		r.Get("/", h.ListNodes)
 		r.Post("/", h.CreateNode)
 		r.Get("/online", h.ListOnlineNodes)
+		// TODO: CRUD node
 	})
 }
 

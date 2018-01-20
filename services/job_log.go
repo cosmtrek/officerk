@@ -32,3 +32,18 @@ func GetJobLog(db *gorm.DB, id string, l *models.JobLog) error {
 	return db.Where("deleted_at IS NULL").Where("id = ?", id).
 		Preload("TaskLogs").First(l).Error
 }
+
+// ListJobLogs gets latest job log
+func ListJobLogs(db *gorm.DB) ([]*models.JobLog, error) {
+	var err error
+	logs := make([]*models.JobLog, 0)
+	err = db.Where("deleted_at IS NULL").Order("updated_at desc").Limit(20).
+		Preload("Job").Preload("TaskLogs").Find(&logs).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return logs, nil
+		}
+		return nil, err
+	}
+	return logs, nil
+}

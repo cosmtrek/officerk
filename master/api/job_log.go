@@ -74,6 +74,16 @@ func (h *Handler) GetJobLogs(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, api.ErrInvalidRequest(err))
 		return
 	}
+	render.Render(w, r, api.OK(NewJobLogListResponse(logs)))
+}
 
+// ListJobLogs ...
+func (h *Handler) ListJobLogs(w http.ResponseWriter, r *http.Request) {
+	var err error
+	logs, err := services.ListJobLogs(db)
+	if err != nil {
+		render.Render(w, r, api.ErrInvalidRequest(err))
+		return
+	}
 	render.Render(w, r, api.OK(NewJobLogListResponse(logs)))
 }

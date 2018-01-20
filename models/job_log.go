@@ -21,5 +21,6 @@ type JobLog struct {
 	Status JobStatus `gorm:"not null" json:"status"`
 	Retry  int       `json:"-"`
 
+	Job      Job       `json:"job,omitempty"`
 	TaskLogs []TaskLog `gorm:"ForeignKey:JobLogID" json:"task_logs,omitempty"`
 }
