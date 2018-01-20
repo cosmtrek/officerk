@@ -1,9 +1,14 @@
 package api
 
 import (
+	"net/http"
+
+	"github.com/go-chi/render"
 	"github.com/jinzhu/gorm"
 
 	"github.com/cosmtrek/officerk/master/property"
+	"github.com/cosmtrek/officerk/models"
+	"github.com/cosmtrek/officerk/utils/api"
 )
 
 var db *gorm.DB
@@ -20,4 +25,9 @@ func NewHandler(d *gorm.DB, runtime *property.Runtime) *Handler {
 	return &Handler{
 		runtime: runtime,
 	}
+}
+
+// GetEnum ...
+func (h *Handler) GetEnum(w http.ResponseWriter, r *http.Request) {
+	render.Render(w, r, api.OK(models.Enum))
 }

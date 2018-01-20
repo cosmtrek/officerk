@@ -23,11 +23,12 @@ func (n *NodeRequest) Bind(r *http.Request) error {
 // NodeResponse ...
 type NodeResponse struct {
 	*models.Node
+	Online bool `json:"online"`
 }
 
 // NewNodeResponse ...
-func NewNodeResponse(node *models.Node) *NodeResponse {
-	return &NodeResponse{Node: node}
+func NewNodeResponse(node *models.Node, online bool) *NodeResponse {
+	return &NodeResponse{Node: node, Online: online}
 }
 
 // Render for NodeResponse
@@ -39,10 +40,16 @@ func (nr NodeResponse) Render(w http.ResponseWriter, r *http.Request) error {
 type NodeListResponse []*NodeResponse
 
 // NewNodeListResponse ...
-func NewNodeListResponse(nodes []*models.Node) []render.Renderer {
+func NewNodeListResponse(nodes []*models.Node, onlineNodes []string) []render.Renderer {
 	list := make([]render.Renderer, 0)
 	for _, node := range nodes {
-		list = append(list, NewNodeResponse(node))
+		online := false
+		for _, n := range onlineNodes {
+			if node.IP == n {
+				online = true
+			}
+		}
+		list = append(list, NewNodeResponse(node, online))
 	}
 	return list
 }
@@ -55,8 +62,7 @@ func (h *Handler) ListNodes(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, api.ErrNotFound)
 		return
 	}
-	render.Render(w, r, api.OK(NewNodeListResponse(nodes)))
-
+	render.Render(w, r, api.OK(NewNodeListResponse(nodes, h.runtime.Nodes())))
 }
 
 // CreateNode creates node
@@ -72,5 +78,10 @@ func (h *Handler) CreateNode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	render.Status(r, http.StatusCreated)
-	render.Render(w, r, api.OK(NewNodeResponse(data.Node)))
+	render.Render(w, r, api.OK(NewNodeResponse(data.Node, h.runtime.IsOnline(data.Node.IP))))
+}
+
+// ListOnlineNodes return nodes live in etcd
+func (h *Handler) ListOnlineNodes(w http.ResponseWriter, r *http.Request) {
+	render.Render(w, r, api.OK(h.runtime.Nodes()))
 }

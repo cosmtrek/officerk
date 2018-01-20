@@ -95,6 +95,8 @@ func (ctr *Controller) registerRoutes() {
 		w.Write([]byte("Sometimes to love someone, you gotta be a stranger. -- Blade Runner 2049"))
 	})
 
+	r.Get("/enum", h.GetEnum)
+
 	r.Route("/jobs", func(r chi.Router) {
 		r.Get("/", h.ListJobs)
 		r.Post("/", h.CreateJob)
@@ -114,6 +116,7 @@ func (ctr *Controller) registerRoutes() {
 	r.Route("/nodes", func(r chi.Router) {
 		r.Get("/", h.ListNodes)
 		r.Post("/", h.CreateNode)
+		r.Get("/online", h.ListOnlineNodes)
 	})
 }
 
@@ -156,7 +159,7 @@ func (ctr *Controller) watchNodes() {
 				v := strings.Split(key, "/")
 				runtime.DeleteNode(property.NodeIP(v[2]))
 			}
-			logrus.Debugf("nodes: %+v", runtime.Nodes)
+			logrus.Debugf("nodes: %+v", runtime.Nodes())
 		}
 	}
 }

@@ -22,7 +22,7 @@ type Runtime struct {
 	IsDebug bool
 
 	sync.RWMutex
-	Nodes map[NodeIP]NodeService
+	nodes map[NodeIP]NodeService
 }
 
 // NewRuntime ...
@@ -34,7 +34,7 @@ func NewRuntime() (*Runtime, error) {
 	nodes := make(map[NodeIP]NodeService)
 	return &Runtime{
 		IP:    ip,
-		Nodes: nodes,
+		nodes: nodes,
 	}, nil
 }
 
@@ -42,25 +42,48 @@ func NewRuntime() (*Runtime, error) {
 func (r *Runtime) AddNode(ip NodeIP, service NodeService) {
 	r.Lock()
 	defer r.Unlock()
-	r.Nodes[ip] = service
+	r.nodes[ip] = service
 }
 
 // DeleteNode ...
 func (r *Runtime) DeleteNode(ip NodeIP) {
 	r.Lock()
 	defer r.Unlock()
-	delete(r.Nodes, ip)
+	delete(r.nodes, ip)
 }
 
 // FindNode ...
 func (r *Runtime) FindNode(ip NodeIP) (NodeService, error) {
 	r.RLock()
 	defer r.RUnlock()
-	s, ok := r.Nodes[ip]
+	s, ok := r.nodes[ip]
 	if !ok {
 		return NodeService("nil"), errors.New("failed to find node")
 	}
 	return s, nil
+}
+
+// Nodes ...
+func (r *Runtime) Nodes() []string {
+	r.RLock()
+	defer r.RUnlock()
+	nodes := make([]string, 0)
+	for k, _ := range r.nodes {
+		nodes = append(nodes, string(k))
+	}
+	return nodes
+}
+
+// IsOnline ...
+func (r *Runtime) IsOnline(ip string) bool {
+	r.RLock()
+	defer r.RUnlock()
+	for k, _ := range r.nodes {
+		if ip == string(k) {
+			return true
+		}
+	}
+	return false
 }
 
 // Inspect ...
