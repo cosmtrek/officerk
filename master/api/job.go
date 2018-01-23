@@ -146,6 +146,10 @@ func (h *Handler) UpdateJob(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, api.ErrNodeResponse(err))
 		return
 	}
+	if err = services.GetJob(db, strconv.Itoa(int(job.ID)), data.Job); err != nil {
+		render.Render(w, r, api.ErrNotFound)
+		return
+	}
 	render.Render(w, r, api.OK(NewJobResponse(data.Job)))
 }
 

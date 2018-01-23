@@ -86,9 +86,9 @@ func (e *Engine) reloadCron() error {
 	ncron := cron.New()
 	for _, dag := range e.jobDAGs {
 		logrus.Debugf("# job: %s", dag.Job().Name)
-		if dag.Job().Typ == models.JobTypeCron {
+		if dag.Job().Typ == models.JobTypeCron && dag.Job().IsOnline {
 			logrus.Debugf("@ cron job: %s", dag.Job().Name)
-			err = ncron.AddJob(dag.Job().Schedule, dag)
+			err = ncron.AddJob(dag.Job().Schedule.String, dag)
 			if err != nil {
 				return errors.WithStack(err)
 			}
