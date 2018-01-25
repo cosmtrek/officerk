@@ -24,3 +24,18 @@ func GetNodes(db *gorm.DB) ([]*models.Node, error) {
 	}
 	return nodes, nil
 }
+
+// GetNode gets node
+func GetNode(db *gorm.DB, id string, n *models.Node) error {
+	return db.Where("deleted_at IS NULL").Where("id = ?", id).First(n).Error
+}
+
+// UpdateNode updates node
+func UpdateNode(db *gorm.DB, n *models.Node, data *models.Node) error {
+	return db.Model(n).Updates(data).Error
+}
+
+// DeleteNode deletes node
+func DeleteNode(db *gorm.DB, n *models.Node) error {
+	return db.Delete(n).Error
+}

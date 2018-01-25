@@ -58,7 +58,7 @@ func (r *Runtime) FindNode(ip NodeIP) (NodeService, error) {
 	defer r.RUnlock()
 	s, ok := r.nodes[ip]
 	if !ok {
-		return NodeService("nil"), errors.New("failed to find node")
+		return NodeService("nil"), errors.New("failed to find the node, is it online?")
 	}
 	return s, nil
 }

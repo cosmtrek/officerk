@@ -15,7 +15,7 @@ $$ \__$$ |$$ |      $$ |      $$ |$$ \_____ $$$$$$$$/ $$ |      $$ |$$  \
 $$    $$/ $$ |      $$ |      $$ |$$       |$$       |$$ |      $$ | $$  |
  $$$$$$/  $$/       $$/       $$/  $$$$$$$/  $$$$$$$/ $$/       $$/   $$/
 
-              A Distributed DAG Based Job System
+              A Distributed DAG Based CronJob System
 
 - build timestamp: %s
 - commit: %s

@@ -118,7 +118,13 @@ func (ctr *Controller) registerRoutes() {
 		r.Get("/", h.ListNodes)
 		r.Post("/", h.CreateNode)
 		r.Get("/online", h.ListOnlineNodes)
-		// TODO: CRUD node
+
+		r.Route("/{nodeID}", func(r chi.Router) {
+			r.Use(api.NodeCtx)
+			r.Get("/", h.GetNode)
+			r.Put("/", h.UpdateNode)
+			r.Delete("/", h.DeleteNode)
+		})
 	})
 }
 
