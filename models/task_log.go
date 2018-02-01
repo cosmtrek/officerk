@@ -22,4 +22,6 @@ type TaskLog struct {
 	Status   TaskStatus `gorm:"not null" json:"status"`
 	Retry    int        `json:"-"`
 	Result   string     `sql:"type:text" json:"result"`
+
+	Task Task `gorm:"ForeignKey:TaskID" json:"task"`
 }

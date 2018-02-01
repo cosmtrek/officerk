@@ -1,0 +1,43 @@
+.dataContainer {
+	padding-top: 20px;
+}
+
+.formContainer {
+	padding-top: 30px;
+}
+
+.dynamic-delete-button {
+	cursor: pointer;
+	position: relative;
+	float: right;
+	top: 30px;
+	right: -16px;
+	margin: -20px;
+	font-size: 20px;
+	color: #999;
+	transition: all .3s;
+}
+.dynamic-delete-button:hover {
+	color: #f5222d;
+}
+.dynamic-delete-button[disabled] {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+
+.jobInfo {
+	margin-left: 4px;
+}
+
+ul.taskList {
+	list-style-type: decimal;
+	padding: 4px 0 0 24px;
+}
+
+li.jobInfo {
+	padding-left: 8px;
+}
+
+.taskInfo {
+	margin-right: 8px;
+}

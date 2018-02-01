@@ -58,6 +58,7 @@ func (r *Runtime) FindNode(ip NodeIP) (NodeService, error) {
 	defer r.RUnlock()
 	s, ok := r.nodes[ip]
 	if !ok {
+		logrus.Debugf("not found node ip: %s", string(ip))
 		return NodeService("nil"), errors.New("failed to find the node, is it online?")
 	}
 	return s, nil

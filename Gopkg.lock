@@ -8,7 +8,8 @@
     "clientv3",
     "etcdserver/api/v3rpc/rpctypes",
     "etcdserver/etcdserverpb",
-    "mvcc/mvccpb"
+    "mvcc/mvccpb",
+    "pkg/cors"
   ]
   revision = "fb5cd6f1c72c2b98e0c4453444cdfba306da867b"
   version = "v3.2.14"
@@ -24,6 +25,12 @@
   packages = ["."]
   revision = "e83ac2304db3c50cf03d96a2fcd39009d458bc35"
   version = "v3.3.2"
+
+[[projects]]
+  name = "github.com/go-chi/cors"
+  packages = ["."]
+  revision = "dba6525398619dead495962a916728e7ee2ca322"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/go-chi/render"
@@ -181,6 +188,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "57ff89cb182824f962964f4c108cfd15a829ac7ce5f889661bf0891bac5211e8"
+  inputs-digest = "a4721de895ddb9f55fe5f73e54a8a82e9fd3c0d00dfb460c2f3ac24481925a54"
   solver-name = "gps-cdcl"
   solver-version = 1

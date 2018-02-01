@@ -8,6 +8,7 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
@@ -89,6 +90,15 @@ func (ctr *Controller) Run() {
 func (ctr *Controller) registerRoutes() {
 	h := api.NewHandler(ctr.db, ctr.runtime)
 	r := ctr.router
+	cors := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	})
+	r.Use(cors.Handler)
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 
 	r.Get("/k", func(w http.ResponseWriter, r *http.Request) {

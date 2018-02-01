@@ -62,7 +62,7 @@ func checkTasksDependencyCircle(j *JobRequest) error {
 
 type Graph struct {
 	Nodes []models.Task `json:"nodes"`
-	Edges []edge        `json:"edge"`
+	Edges []edge        `json:"edges"`
 }
 
 type edge struct {

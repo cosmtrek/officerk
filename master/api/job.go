@@ -142,12 +142,13 @@ func (h *Handler) UpdateJob(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, api.ErrInvalidRequest(err))
 		return
 	}
-	if err = h.reloadJobsOnNode(job); err != nil {
-		render.Render(w, r, api.ErrNodeResponse(err))
-		return
-	}
 	if err = services.GetJob(db, strconv.Itoa(int(job.ID)), data.Job); err != nil {
 		render.Render(w, r, api.ErrNotFound)
+		return
+	}
+	// FIXME: reload jobs on two nodes if node_id updated
+	if err = h.reloadJobsOnNode(data.Job); err != nil {
+		render.Render(w, r, api.ErrNodeResponse(err))
 		return
 	}
 	render.Render(w, r, api.OK(NewJobResponse(data.Job)))
