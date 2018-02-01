@@ -25,7 +25,6 @@ export class JobForm extends React.Component {
 				params.tasks = tasks
 				delete params.task_keys
 				console.log("params: ", params)
-				console.log("job: ", job)
 				console.log(JSON.stringify(params))
 				if (op === 'CREATE') {
 					this.props.api.createJob(params)
@@ -37,6 +36,7 @@ export class JobForm extends React.Component {
 							}
 						})
 				} else if (op === 'PUT') {
+					params.id = job.id
 					this.props.api.editJob(job.id, params)
 						.then((resp) => {
 							if (resp.error) {

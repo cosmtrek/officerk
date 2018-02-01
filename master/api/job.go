@@ -142,16 +142,21 @@ func (h *Handler) UpdateJob(w http.ResponseWriter, r *http.Request) {
 		render.Render(w, r, api.ErrInvalidRequest(err))
 		return
 	}
-	if err = services.GetJob(db, strconv.Itoa(int(job.ID)), data.Job); err != nil {
+	if err = services.GetJob(db, strconv.Itoa(int(job.ID)), job); err != nil {
 		render.Render(w, r, api.ErrNotFound)
 		return
 	}
-	// FIXME: reload jobs on two nodes if node_id updated
-	if err = h.reloadJobsOnNode(data.Job); err != nil {
+	if err = h.reloadJobsOnNode(job); err != nil {
 		render.Render(w, r, api.ErrNodeResponse(err))
 		return
 	}
-	render.Render(w, r, api.OK(NewJobResponse(data.Job)))
+	if job.NodeID != data.Job.NodeID {
+		if err = h.reloadJobsOnNode(data.Job); err != nil {
+			render.Render(w, r, api.ErrNodeResponse(err))
+			return
+		}
+	}
+	render.Render(w, r, api.OK(NewJobResponse(job)))
 }
 
 // DeleteJob deletes the job
@@ -195,7 +200,8 @@ func (h *Handler) reloadJobsOnNode(job *models.Job) error {
 	}
 	endpoint, err := h.runtime.FindNode(property.NodeIP(job.Node.IP))
 	if err != nil {
-		return err
+		// ignore offline node
+		return nil
 	}
 	return services.ReloadJobsOnNode(endpoint)
 }

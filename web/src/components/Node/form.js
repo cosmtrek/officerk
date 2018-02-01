@@ -11,7 +11,7 @@ export class NodeForm extends React.Component {
 		e.preventDefault()
 		this.props.form.validateFields((err, values) => {
 			if (!err) {
-				console.log('form values: ', values)
+				console.log('params: ', values)
 				const params = values
 				if (op === 'CREATE') {
 					this.props.api.createNode(params)
