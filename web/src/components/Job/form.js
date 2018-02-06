@@ -8,6 +8,10 @@ const Option = Select.Option
 let taskId = 0
 
 export class JobForm extends React.Component {
+	state = {
+		displaySchedule: false,
+	}
+
 	handleSubmit = (e) => {
 		const {op, job} = this.props
 		e.preventDefault()
@@ -25,25 +29,21 @@ export class JobForm extends React.Component {
 				params.tasks = tasks
 				delete params.task_keys
 				console.log("params: ", params)
-				console.log(JSON.stringify(params))
 				if (op === 'CREATE') {
 					this.props.api.createJob(params)
 						.then((resp) => {
-							if (resp.error) {
-								Notification.error('Create Job', resp.error)
-							} else {
-								Notification.success('Create Job', 'OK')
-							}
+							Notification.success('Create Job', 'OK')
+						})
+						.catch((error) => {
+							Notification.error('Create Job', error.message + error.response.error)
 						})
 				} else if (op === 'PUT') {
-					params.id = job.id
 					this.props.api.editJob(job.id, params)
 						.then((resp) => {
-							if (resp.error) {
-								Notification.error('Edit Job', resp.error)
-							} else {
-								Notification.success('Edit Job', 'OK')
-							}
+							Notification.success('Edit Job', 'OK')
+						})
+						.catch((error) => {
+							Notification.error('Edit Job', error.message + error.response.error)
 						})
 				}
 			}
@@ -73,16 +73,35 @@ export class JobForm extends React.Component {
 		})
 	}
 
+	toggleSchedule = (value) => {
+		const display = value === 0
+		this.setState({
+			// cron type
+			displaySchedule: display,
+		})
+		if (!display) {
+			this.props.form.setFieldsValue({
+				schedule: '',
+			})
+		}
+	}
+
+	componentWillMount() {
+		this.setState({
+			displaySchedule: !!(this.props.job && this.props.job.schedule),
+		})
+	}
+
 	render() {
 		const {nodeList, job} = this.props
 		const {getFieldDecorator, getFieldValue} = this.props.form
 		const formItemLayout = {
 			labelCol: { span: 2 },
-			wrapperCol: { span: 6 },
+			wrapperCol: { span: 12 },
 		}
 		const formTailLayout = {
 			labelCol: { span: 2 },
-			wrapperCol: { span: 6, offset: 2 },
+			wrapperCol: { span: 12, offset: 2 },
 		}
 		const switchLayout = {
 			colon: false,
@@ -90,13 +109,13 @@ export class JobForm extends React.Component {
 		}
 		const taskLayout = {
 			labelCol: {span: 2},
-			wrapperCol: {span: 6},
+			wrapperCol: {span: 12},
 		}
 		const taskWithoutLabelLayout = {
-			wrapperCol: {span: 6, offset: 2},
+			wrapperCol: {span: 12, offset: 2},
 		}
 		const addTaskLayout = {
-			wrapperCol: {span: 10, offset: 2},
+			wrapperCol: {span: 20, offset: 2},
 		}
 
 		getFieldDecorator('task_keys', {initialValue: job ? job.tasks.map((k) => `o${k.id}`) : []})
@@ -155,8 +174,37 @@ export class JobForm extends React.Component {
 					)}
 				</FormItem>
 				<FormItem
+					{...switchLayout}
+					label="Online"
+				>
+					{getFieldDecorator('is_online', {
+						rules: [{required: true}],
+						valuePropName: 'checked',
+						initialValue: job ? job.is_online : false,
+					})(
+						<Switch/>
+					)}
+				</FormItem>
+				<FormItem
+					{...formItemLayout}
+					label="Type"
+				>
+					{getFieldDecorator('typ', {
+						rules: [{required: true}],
+						initialValue: job ? job.typ : 0,
+					})(
+						<Select
+							onChange={this.toggleSchedule}
+						>
+							<Option key='cron' value={0}>Cron</Option>
+							<Option key='manual' value={1}>Manual</Option>
+						</Select>
+					)}
+				</FormItem>
+				<FormItem
 					{...formItemLayout}
 					label="Schedule"
+					style={{display: this.state.displaySchedule ? '' : 'none'}}
 				>
 					{getFieldDecorator('schedule', {
 						initialValue: job ? job.schedule : '',
@@ -166,33 +214,10 @@ export class JobForm extends React.Component {
 				</FormItem>
 				<FormItem
 					{...formItemLayout}
-					label="Type"
-				>
-					{getFieldDecorator('typ', {
-						initialValue: job ? job.typ : 0,
-					})(
-						<Select>
-							<Option key='cron' value={0}>Cron</Option>
-							<Option key='manual' value={1}>Manual</Option>
-						</Select>
-					)}
-				</FormItem>
-				<FormItem
-					{...switchLayout}
-					label="Online"
-				>
-					{getFieldDecorator('is_online', {
-						valuePropName: 'checked',
-						initialValue: job ? job.is_online : false,
-					})(
-						<Switch/>
-					)}
-				</FormItem>
-				<FormItem
-					{...formItemLayout}
 					label="Node IP"
 				>
 					{getFieldDecorator('node_id', {
+						rules: [{required: true}],
 						initialValue: job ? job.node_id : 'Node',
 					})(
 						<Select>

@@ -7,17 +7,14 @@ export class API {
 
 	getEnum = () => {
 		return axios.get(`${this.api}/enum`)
-			.then((data) => data)
 	}
 
 	getNodesOnline = () => {
 		return axios.get(`${this.api}/nodes/online`)
-			.then((data) => data)
 	}
 
 	getNodeList = () => {
 		return axios.get(`${this.api}/nodes`)
-			.then((data) => data)
 	}
 
 	createNode = (params) => {

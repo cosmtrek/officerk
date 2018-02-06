@@ -53,7 +53,10 @@ export class Nodes extends React.Component {
 						nodeList: resp.data.data,
 					})
 				}
-		})
+			})
+			.catch((error) => {
+				console.log(error)
+			})
 	}
 
 	render() {

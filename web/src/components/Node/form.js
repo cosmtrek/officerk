@@ -16,20 +16,18 @@ export class NodeForm extends React.Component {
 				if (op === 'CREATE') {
 					this.props.api.createNode(params)
 						.then((resp) => {
-							if (resp.error) {
-								Notification.error('Create Node', resp.error)
-							} else {
-								Notification.success('Create Node', 'OK')
-							}
+							Notification.success('Create Node', 'OK')
+						})
+						.catch((error) => {
+							Notification.error('Create Node', error.message + error.response.error)
 						})
 				} else if (op === 'PUT') {
 					this.props.api.editNode(node.id, params)
 						.then((resp) => {
-							if (resp.error) {
-								Notification.error('Edit Node', resp.error)
-							} else {
-								Notification.success('Edit Node', 'OK')
-							}
+							Notification.success('Edit Node', 'OK')
+						})
+						.catch((error) => {
+							Notification.error('Create Node', error.message + error.response.error)
 						})
 				}
 			}
