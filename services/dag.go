@@ -81,9 +81,6 @@ func (j JobDAG) Run() {
 			logrus.Errorf("failed to update job status, err: %s", err)
 		}
 		// TODO: send alert notification
-		// b := new(bytes.Buffer)
-		// json.NewEncoder(b).Encode(jobLog)
-		// utils.SendAlert(b)
 	} else {
 		if err = UpdateJobLogStatus(j.db, jobLog, models.JobSucceed); err != nil {
 			logrus.Errorf("failed to update job status, err: %s", err)

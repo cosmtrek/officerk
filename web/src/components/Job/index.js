@@ -57,7 +57,7 @@ export class Job extends React.Component {
 				<div>
 					<Row>
 						<Col span={20}>
-							<h2>Job #{job.id}@{job.node.ip}: {job.name} {job.slug ? `(${job.slug})` : ''}</h2>
+							<h2>Job #{job.id}@{job.node.ip ? job.node.ip : '[deleted node]'}: {job.name} {job.slug ? `(${job.slug})` : ''}</h2>
 						</Col>
 						<Col span={2} style={{textAlign: 'right'}}>
 							<Link to={`/jobs/${job.id}/edit`}>

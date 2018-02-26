@@ -87,8 +87,16 @@ export class JobForm extends React.Component {
 	}
 
 	componentWillMount() {
+		let display = false
+		const {job} = this.props
+		if (job && job.typ === 0) {
+			display = true
+		}
+		if (!(job)) {
+			display = true
+		}
 		this.setState({
-			displaySchedule: !!(this.props.job && this.props.job.schedule),
+			displaySchedule: display,
 		})
 	}
 

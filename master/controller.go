@@ -108,14 +108,14 @@ func (ctr *Controller) registerRoutes() {
 	r.Get("/enum", h.GetEnum)
 
 	r.Route("/jobs", func(r chi.Router) {
-		r.Get("/", h.ListJobs)
-		r.Post("/", h.CreateJob)
+		r.Get("", h.ListJobs)
+		r.Post("", h.CreateJob)
 
 		r.Route("/{jobID}", func(r chi.Router) {
 			r.Use(api.JobCtx)
-			r.Get("/", h.GetJob)
-			r.Put("/", h.UpdateJob)
-			r.Delete("/", h.DeleteJob)
+			r.Get("", h.GetJob)
+			r.Put("", h.UpdateJob)
+			r.Delete("", h.DeleteJob)
 			r.Get("/run", h.RunJob)
 			r.Get("/logs", h.GetJobLogs)
 		})
@@ -125,15 +125,15 @@ func (ctr *Controller) registerRoutes() {
 	r.Get("/joblogs/{joblogID}", h.GetJobLog)
 
 	r.Route("/nodes", func(r chi.Router) {
-		r.Get("/", h.ListNodes)
-		r.Post("/", h.CreateNode)
+		r.Get("", h.ListNodes)
+		r.Post("", h.CreateNode)
 		r.Get("/online", h.ListOnlineNodes)
 
 		r.Route("/{nodeID}", func(r chi.Router) {
 			r.Use(api.NodeCtx)
-			r.Get("/", h.GetNode)
-			r.Put("/", h.UpdateNode)
-			r.Delete("/", h.DeleteNode)
+			r.Get("", h.GetNode)
+			r.Put("", h.UpdateNode)
+			r.Delete("", h.DeleteNode)
 		})
 	})
 }
